@@ -1,15 +1,11 @@
 const fs = require('fs')
-const root = "C:\\Users\\Justin Chance\\AppData\\LocalLow\\Team Cherry\\Hollow Knight\\Randomizer 4\\Recent\\"
-const helperLog = root + "HelperLog.txt"
+const path = require('path')
+const root = path.resolve(process.env.APPDATA, "../LocalLow/Team Cherry/Hollow Knight/Randomizer 4/Recent/")
+const helperLog = path.resolve(root, "HelperLog.txt")
 const output = "HKAutotrack.md"
 
-const r_transition = /^TRANSITION/
-const r_toName = /(?<=--- {).*(?=\[.*\]} -->)/
-const r_toEntry = /(?<=\[).*(?=]} -->)/
-const r_fromName = /(?<=--> {).*(?=\[)/
-const r_fromEntry = /[a-zA-Z0-9_]*(?=]}$)/
 const r_helperLocation = /[a-zA-Z0-9_]*(?=\[)/
-const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[|$))/
+const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[| |$))/
 
 const special = {
    "Crossroads_04": "{{Salubra Bench}}:::bench",
@@ -25,7 +21,33 @@ const special = {
    "Ruins_House_03": "[Eternam Emilitia]",
    "Fungus3_archive": "{{Archives Bench}}:::bench",
    "Mines_29": "{{Mines Dark Room Bench}}:::bench",
-   "Ruins1_02": "{{Quirrel Bench}}:::bench"
+   "Ruins1_02": "{{Quirrel Bench}}:::bench",
+   "Ruins1_31": "{{Ruins Toll Bench}}:::bench",
+   "Room_temple": "[(Temple)]:::temple",
+   "Fungus1_16_alt": "{{Greenpath Stag Station}}:::bench",
+   "Crossroads_47": "{{Crossroads Stag Station}}:::bench",
+   "Room_Ouiji": "[Jiji]",
+   "Room_Colosseum_02": "{{Colosseum Bench}}:::bench",
+   "Fungus1_15": "{{Sheo Bench}}:::bench",
+   "Crossroads_30": "{{Crossroads Hot Spring Bench}}:::bench",
+   "Deepnest_09": "{{Deepnest Stag Station}}:::stag",
+   "Deepnest_30": "{{Deepnest Hotspring Bench}}:::bench",
+   "Crossroads_46": "[Upper Tram Left]",
+   "Ruins2_06": "[Kings Station]",
+   "Fungus2_13": "{{Bretta Bench}}:::bench",
+   "Ruins_Bathhouse": "{{Pleasure House Bench}}:::bench",
+   "Abyss_18": "{{Basin Toll Bench}}:::bench",
+   "Crossroads_ShamanTemple": "{{Ancestral Mounds Bench}}:::bench",
+   "Fungus2_31": "{{Mantis Village Bench}}:::bench",
+   "Ruins1_29": "{{City Storerooms}}:::bench",
+   "Mines_18": "{{Crystal Guardian Bench}}:::bench",
+   "White_Palace_01": "{{White Palace Entrance}}:::bench",
+   "Fungus3_40": "{{Gardens Stag Station}}:::bench",
+   "Fungus3_50": "{{Gardens Toll Bench}}:::bench",
+   "Deepnest_Spider_Town": "{{Beast's Den}}:::bench",
+   "Deepnest_14": "{{Failed Tramway Bench}}:::bench",
+   "Room_Slug_Shrine": "{{Unn Bench}}:::bench",
+   "White_Palace_06": "{{White Palace Balcony}}:::bench"
 }
 
 const classDefs = `
@@ -34,13 +56,14 @@ classDef shop fill:#946513;
 classDef bench fill:#138d94;
 classDef transition stroke-width:4px,stroke:#d68b00;
 classDef check color:#3ab020;
+classDef last fill:#022e00;
 `
 
 var locationDataRaw = fs.readFileSync('locations.json')
 var locationData = JSON.parse(locationDataRaw)
 var locationLogic = {}
 for (const location of locationData) {
-   locationLogic[location.name] = location.logic.match(r_locationLogic)[0]
+   locationLogic[location.name] = location.logic.match(r_locationLogic)?.[0]
 }
 
 async function start() {
@@ -54,6 +77,7 @@ function updateTracker() {
    var connections = {}
    var transitionData = ""
    var checkData = ""
+   var lastTransition = ""
    const helperLogFile = fs.readFileSync(helperLog, 'utf-8')
 
    var startInfo = false
@@ -75,6 +99,7 @@ function updateTracker() {
             var transitionTo = trimmedLine.match(r_transitionTo)[0]
             if ( transitionTo && transitionFrom && connections[transitionTo] != transitionFrom) {
                connections[transitionFrom] = transitionTo
+               lastTransition = `${transitionTo}:::last\n`
                if (special[transitionFrom]) {transitionFrom += special[transitionFrom]}
                if (special[transitionTo]) {transitionTo += special[transitionTo]}
                transitionData += `${transitionFrom} --- ${transitionTo}\n`
@@ -100,7 +125,7 @@ function updateTracker() {
             startItemChecks = false
          } else {
             var item = line.replaceAll(/\r?\n? /g, "")
-            if (locationLogic[item]){
+            if (locationLogic[item]) {
                checkData += `${locationLogic[item]}:::check\n`
             }
          }
@@ -110,7 +135,8 @@ function updateTracker() {
       }
    })
 
-   fs.writeFile(output, `\`\`\`mermaid\nflowchart LR\n${classDefs}\n\n${transitionData}\n${checkData}`, (err) => {
+   transitionData += lastTransition
+   fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}\n${checkData}`, (err) => {
       if (err) throw err
    })
 }
