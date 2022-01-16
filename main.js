@@ -11,14 +11,14 @@ const special = {
    "Crossroads_04": "{{Salubra Bench}}:::bench",
    "Tutorial_01": "((Start)):::start",
    "RestingGrounds_12": "{{Grey Mourner Bench}}:::bench",
-   "RestingGrounds_09": "{{Resting Grounds Stag Station}}:::stag",
+   "RestingGrounds_09": "{{Resting Grounds Stag Station}}:::bench",
    "Deepnest_East_06": "{{Oro Bench}}:::bench",
    "Room_mapper": "{Iselda}:::shop",
    "Town": "{{Dirtmouth}}:::bench",
    "Deepnest_10": "[Distant Village]",
    "RestingGrounds_07": "{Seer}:::shop",
    "White_Palace_03_hub": "{{White Palace Atrium}}:::bench",
-   "Ruins_House_03": "[Eternam Emilitia]",
+   "Ruins_House_03": "[Eternal Emilitia]",
    "Fungus3_archive": "{{Archives Bench}}:::bench",
    "Mines_29": "{{Mines Dark Room Bench}}:::bench",
    "Ruins1_02": "{{Quirrel Bench}}:::bench",
@@ -47,7 +47,14 @@ const special = {
    "Deepnest_Spider_Town": "{{Beast's Den}}:::bench",
    "Deepnest_14": "{{Failed Tramway Bench}}:::bench",
    "Room_Slug_Shrine": "{{Unn Bench}}:::bench",
-   "White_Palace_06": "{{White Palace Balcony}}:::bench"
+   "White_Palace_06": "{{White Palace Balcony}}:::bench",
+   "Abyss_03": "[Lower Tram Center]",
+   "Fungus1_31": "{{Greenpath Toll Bench}}:::bench",
+   "Ruins2_08": "{{Kings Station Bench}}:::bench",
+   "Fungus2_02": "{{Queens Station Stag}}:::bench",
+   "Ruins1_18": "{{Watcher's Spire Bench}}:::bench",
+   "Fungus1_37": "{{Stone Sanctuary Bench}}:::bench",
+   "Room_Charm_Shop": "{Salubra}:::shop"
 }
 
 const classDefs = `
@@ -78,7 +85,7 @@ function updateTracker() {
    var transitionData = ""
    var checkData = ""
    var lastTransition = ""
-   const helperLogFile = fs.readFileSync(helperLog, 'utf-8')
+   const helperLogFile = fs.readFileSync(helperLog, 'utf-8').replaceAll(/\*/g, "")
 
    var startInfo = false
    var startItemChecks = false
