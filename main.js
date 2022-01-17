@@ -196,11 +196,11 @@ function updateLocation() {
    const r_transitionChange = /(?<=\[INFO\]:\[Hkmp\.Game\.Client\.ClientManager\] ).*(?=\n|$)/gm
    const modLogFile = fs.readFileSync(modLog, 'utf-8')
    const location = modLogFile.match(r_transitionChange)?.at(-1).match(/\b(\w+)$/)[0]
-   if (!location) { return }
-
+   
    var doors = transitionTable[location]
    var secondLayer = []
    var transitionData = ``
+   if (!location || !doors) { return }
    for (const [fromDoor, toId] of Object.entries(doors)) {
          var nameFrom = special[location]?.[0] ?? location
          var nameTo = special[toId[0]]?.[0] ?? toId[0]
