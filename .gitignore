@@ -1,3 +1,4 @@
 node_modules
-.obsidian
+.obsidian/*
 HKAutotrack.md
+!.obsidian/snippets

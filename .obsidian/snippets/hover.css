@@ -1,0 +1,4 @@
+.edge-thickness-normal:hover {
+   stroke-width:8px !important;
+   stroke: green !important;
+}

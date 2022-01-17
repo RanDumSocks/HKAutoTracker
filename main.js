@@ -8,54 +8,56 @@ const r_helperLocation = /[a-zA-Z0-9_]*(?=\[)/
 const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[| |$))/
 
 const special = {
-   "Crossroads_04": "{{Salubra Bench}}:::bench",
-   "Tutorial_01": "((Start)):::start",
-   "RestingGrounds_12": "{{Grey Mourner Bench}}:::bench",
-   "RestingGrounds_09": "{{Resting Grounds Stag Station}}:::bench",
-   "Deepnest_East_06": "{{Oro Bench}}:::bench",
-   "Room_mapper": "{Iselda}:::shop",
-   "Town": "{{Dirtmouth}}:::bench",
-   "Deepnest_10": "[Distant Village]",
-   "RestingGrounds_07": "{Seer}:::shop",
-   "White_Palace_03_hub": "{{White Palace Atrium}}:::bench",
-   "Ruins_House_03": "[Eternal Emilitia]",
-   "Fungus3_archive": "{{Archives Bench}}:::bench",
-   "Mines_29": "{{Mines Dark Room Bench}}:::bench",
-   "Ruins1_02": "{{Quirrel Bench}}:::bench",
-   "Ruins1_31": "{{Ruins Toll Bench}}:::bench",
-   "Room_temple": "[(Temple)]:::temple",
-   "Fungus1_16_alt": "{{Greenpath Stag Station}}:::bench",
-   "Crossroads_47": "{{Crossroads Stag Station}}:::bench",
-   "Room_Ouiji": "[Jiji]",
-   "Room_Colosseum_02": "{{Colosseum Bench}}:::bench",
-   "Fungus1_15": "{{Sheo Bench}}:::bench",
-   "Crossroads_30": "{{Crossroads Hot Spring Bench}}:::bench",
-   "Deepnest_09": "{{Deepnest Stag Station}}:::stag",
-   "Deepnest_30": "{{Deepnest Hotspring Bench}}:::bench",
-   "Crossroads_46": "[Upper Tram Left]",
-   "Ruins2_06": "[Kings Station]",
-   "Fungus2_13": "{{Bretta Bench}}:::bench",
-   "Ruins_Bathhouse": "{{Pleasure House Bench}}:::bench",
-   "Abyss_18": "{{Basin Toll Bench}}:::bench",
-   "Crossroads_ShamanTemple": "{{Ancestral Mounds Bench}}:::bench",
-   "Fungus2_31": "{{Mantis Village Bench}}:::bench",
-   "Ruins1_29": "{{City Storerooms}}:::bench",
-   "Mines_18": "{{Crystal Guardian Bench}}:::bench",
-   "White_Palace_01": "{{White Palace Entrance}}:::bench",
-   "Fungus3_40": "{{Gardens Stag Station}}:::bench",
-   "Fungus3_50": "{{Gardens Toll Bench}}:::bench",
-   "Deepnest_Spider_Town": "{{Beast's Den}}:::bench",
-   "Deepnest_14": "{{Failed Tramway Bench}}:::bench",
-   "Room_Slug_Shrine": "{{Unn Bench}}:::bench",
-   "White_Palace_06": "{{White Palace Balcony}}:::bench",
-   "Abyss_03": "[Lower Tram Center]",
-   "Fungus1_31": "{{Greenpath Toll Bench}}:::bench",
-   "Ruins2_08": "{{Kings Station Bench}}:::bench",
-   "Fungus2_02": "{{Queens Station Stag}}:::bench",
-   "Ruins1_18": "{{Watcher's Spire Bench}}:::bench",
-   "Fungus1_37": "{{Stone Sanctuary Bench}}:::bench",
-   "Room_Charm_Shop": "{Salubra}:::shop"
+   Crossroads_04: [ 'Salubra Bench', 'bench' ],
+   Tutorial_01: [ 'Start', 'start' ],
+   RestingGrounds_12: [ 'Grey Mourner Bench', 'bench' ],
+   RestingGrounds_09: [ 'Resting Grounds Stag Station', 'bench' ],
+   Deepnest_East_06: [ 'Oro Bench', 'bench' ],
+   Room_mapper: [ 'Iselda', 'shop' ],
+   Town: [ 'Dirtmouth', 'bench' ],
+   Deepnest_10: [ 'Distant Village', undefined ],
+   RestingGrounds_07: [ 'Seer', 'shop' ],
+   White_Palace_03_hub: [ 'White Palace Atrium', 'bench' ],
+   Ruins_House_03: [ 'Eternal Emilitia', undefined ],
+   Fungus3_archive: [ 'Archives Bench', 'bench' ],
+   Mines_29: [ 'Mines Dark Room Bench', 'bench' ],
+   Ruins1_02: [ 'Quirrel Bench', 'bench' ],
+   Ruins1_31: [ 'Ruins Toll Bench', 'bench' ],
+   Room_temple: [ 'Temple', 'temple' ],
+   Fungus1_16_alt: [ 'Greenpath Stag Station', 'bench' ],
+   Crossroads_47: [ 'Crossroads Stag Station', 'bench' ],
+   Room_Ouiji: [ 'Jiji', undefined ],
+   Room_Colosseum_02: [ 'Colosseum Bench', 'bench' ],
+   Fungus1_15: [ 'Sheo Bench', 'bench' ],
+   Crossroads_30: [ 'Crossroads Hot Spring Bench', 'bench' ],
+   Deepnest_09: [ 'Deepnest Stag Station', 'stag' ],
+   Deepnest_30: [ 'Deepnest Hotspring Bench', 'bench' ],
+   Crossroads_46: [ 'Upper Tram Left', undefined ],
+   Ruins2_06: [ 'Kings Station', undefined ],
+   Fungus2_13: [ 'Bretta Bench', 'bench' ],
+   Ruins_Bathhouse: [ 'Pleasure House Bench', 'bench' ],
+   Abyss_18: [ 'Basin Toll Bench', 'bench' ],
+   Crossroads_ShamanTemple: [ 'Ancestral Mounds Bench', 'bench' ],
+   Fungus2_31: [ 'Mantis Village Bench', 'bench' ],
+   Ruins1_29: [ 'City Storerooms', 'bench' ],
+   Mines_18: [ 'Crystal Guardian Bench', 'bench' ],
+   White_Palace_01: [ 'White Palace Entrance', 'bench' ],
+   Fungus3_40: [ 'Gardens Stag Station', 'bench' ],
+   Fungus3_50: [ 'Gardens Toll Bench', 'bench' ],
+   Deepnest_Spider_Town: [ 'Beast', 's Den' ],
+   Deepnest_14: [ 'Failed Tramway Bench', 'bench' ],
+   Room_Slug_Shrine: [ 'Unn Bench', 'bench' ],
+   White_Palace_06: [ 'White Palace Balcony', 'bench' ],
+   Abyss_03: [ 'Lower Tram Center', undefined ],
+   Fungus1_31: [ 'Greenpath Toll Bench', 'bench' ],
+   Ruins2_08: [ 'Kings Station Bench', 'bench' ],
+   Fungus2_02: [ 'Queens Station Stag', 'bench' ],
+   Ruins1_18: [ 'Watcher\'s Spire', 'Bench' ],
+   Fungus1_37: [ 'Stone Sanctuary Bench', 'bench' ],
+   Room_Charm_Shop: [ 'Salubra', 'shop' ],
+   Fungus1_01b: [ 'Greenpath Waterfall Bench', 'bench' ]
 }
+
 
 const classDefs = `
 classDef stag fill:#a775d9;
@@ -68,23 +70,33 @@ classDef last fill:#022e00;
 
 var locationDataRaw = fs.readFileSync('locations.json')
 var locationData = JSON.parse(locationDataRaw)
+var termsDataRaw = fs.readFileSync('terms.json')
+var termsData = JSON.parse(termsDataRaw)
 var locationLogic = {}
+
+termsData.push("RIGHTBALDURS")
+
+var regexTerms = new RegExp(termsData.join("|"), "g")
+
 for (const location of locationData) {
-   locationLogic[location.name] = location.logic.match(r_locationLogic)?.[0]
+   var logic = location.logic.replaceAll(regexTerms, "")
+   locationLogic[location.name] = logic.match(r_locationLogic)?.[0]
 }
 
 async function start() {
+   console.log("...Starting tracker...")
    updateTracker()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
    })
+   console.log("Tracker running, you may now minimise this window.")
 }
 
 function updateTracker() {
-   var connections = {}
    var transitionData = ""
    var checkData = ""
    var lastTransition = ""
+   var transitionTable = {}
    const helperLogFile = fs.readFileSync(helperLog, 'utf-8').replaceAll(/\*/g, "")
 
    var startInfo = false
@@ -95,27 +107,30 @@ function updateTracker() {
    const r_transitionStart = /CHECKED TRANSITIONS$/
    const r_transitionFrom = /^[a-zA-Z0-9_]*/
    const r_transitionTo = /(?<=-->)[a-zA-Z0-9_]*/
+   const r_doorTransitions = /(?<=\[)[a-zA-Z0-9_]*(?=\])/g
    helperLogFile.split(/\r?\n/).forEach(line =>  {
       if (startTransition) {
          if (line.replaceAll(/\r?\n? /g) == "") {
             startTransition = false
          } else {
             var trimmedLine = line.replaceAll(/\r?\n? /g, "")
-            var trimmedLine = trimmedLine.replaceAll(/\*/g, "")
             var transitionFrom = trimmedLine.match(r_transitionFrom)[0]
             var transitionTo = trimmedLine.match(r_transitionTo)[0]
-            if ( transitionTo && transitionFrom && connections[transitionTo] != transitionFrom) {
-               connections[transitionFrom] = transitionTo
+            var doorFrom = trimmedLine.match(r_doorTransitions)[0]
+            var doorTo = trimmedLine.match(r_doorTransitions)[1]
+            if ( transitionTo && transitionFrom) {
                lastTransition = `${transitionTo}:::last\n`
-               if (special[transitionFrom]) {transitionFrom += special[transitionFrom]}
-               if (special[transitionTo]) {transitionTo += special[transitionTo]}
-               transitionData += `${transitionFrom} --- ${transitionTo}\n`
+               if (!transitionTable[transitionFrom]) { transitionTable[transitionFrom] = {} }
+               transitionTable[transitionFrom][doorFrom] = [transitionTo, doorTo]
             }
          }
       }
       if (!startTransition && r_transitionStart.test(line)) {
          startTransition = true
       }
+
+
+
       if (startInfo) {
          if (line.replaceAll(/\r?\n? /g) == "") {
             startInfo = false
@@ -141,6 +156,26 @@ function updateTracker() {
          startItemChecks = true
       }
    })
+
+   var connections = {}
+   for (const [location, doors] of Object.entries(transitionTable)) {
+      var subgraph = ``
+      for (const [fromDoor, toId] of Object.entries(doors)) {
+         if (connections[`${toId[0]}:${toId[1]}`] != `${location}:${fromDoor}`) {
+            var nameFrom = special[location]?.[0] ?? location
+            var nameTo = special[toId[0]]?.[0] ?? toId[0]
+            subgraph += `${location}([${nameFrom}]) --- ${toId[0]}([${nameTo}])\n`
+            connections[`${location}:${fromDoor}`] = `${toId[0]}:${toId[1]}`
+            if (special[location]?.[1]) {
+               subgraph += `${location}:::${special[location][1]}\n`
+            }
+            if (special[toId[0]]?.[1]) {
+               subgraph += `${toId[0]}:::${special[toId[0]][1]}\n`
+            }
+         }
+      }
+      transitionData += subgraph
+   }
 
    transitionData += lastTransition
    fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}\n${checkData}`, (err) => {
