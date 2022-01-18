@@ -5,6 +5,7 @@ const helperLog = path.resolve(root, "HelperLog.txt")
 const modLog = path.resolve(root, "../../ModLog.txt")
 const output = "HKAutotrack.md"
 const lastOut = "localTracker.md"
+const rightOut = "rightLocations.md"
 
 const r_helperLocation = /[a-zA-Z0-9_]*(?=\[)/
 const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[| |$))/
@@ -12,6 +13,7 @@ const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[| |$))/
 var transitionTable = {}
 var checkTable = {}
 var avaliableTransitionTable = {}
+var lastLocation = ""
 
 const special = {
    Crossroads_04: [ 'Salubra Bench', 'bench' ],
@@ -61,7 +63,9 @@ const special = {
    Ruins1_18: [ 'Watcher\'s Spire', 'Bench' ],
    Fungus1_37: [ 'Stone Sanctuary Bench', 'bench' ],
    Room_Charm_Shop: [ 'Salubra', 'shop' ],
-   Fungus1_01b: [ 'Greenpath Waterfall Bench', 'bench' ]
+   Fungus1_01b: [ 'Greenpath Waterfall Bench', 'bench' ],
+   Ruins1_29: [ 'City Storerooms Stag', 'bench'],
+   Fungus2_26: [ 'Leg Eater', 'shop']
 }
 
 
@@ -103,7 +107,7 @@ async function start() {
 function updateTracker() {
    var transitionData = ""
    var checkData = ""
-   var lastTransition = ""
+   var rightLocationString = ""
    const helperLogFile = fs.readFileSync(helperLog, 'utf-8').replaceAll(/\*/g, "")
 
    var startInfo = false
@@ -115,6 +119,7 @@ function updateTracker() {
    const r_transitionFrom = /^[a-zA-Z0-9_]*/
    const r_transitionTo = /(?<=-->)[a-zA-Z0-9_]*/
    const r_doorTransitions = /(?<=\[)[a-zA-Z0-9_]*(?=\])/g
+   const r_right = /right/g
    helperLogFile.split(/\r?\n/).forEach(line =>  {
       if (startTransition) {
          if (line.replaceAll(/\r?\n? /g) == "") {
@@ -126,7 +131,6 @@ function updateTracker() {
             var doorFrom = trimmedLine.match(r_doorTransitions)[0]
             var doorTo = trimmedLine.match(r_doorTransitions)[1]
             if (transitionTo && transitionFrom) {
-               lastTransition = `${transitionFrom}:::last`
                if (!transitionTable[transitionFrom]) { transitionTable[transitionFrom] = {} }
                transitionTable[transitionFrom][doorFrom] = [transitionTo, doorTo]
             }
@@ -145,6 +149,9 @@ function updateTracker() {
             var transitionLocation = line.match(r_helperLocation)[0]
             checkData += `${transitionLocation}:::transition\n`
             avaliableTransitionTable[transitionLocation] = true
+            if (r_right.test(line)) {
+               rightLocationString += `- ${transitionLocation}\n`
+            }
          }
       }
       if (!startInfo && r_transStart.test(line)) {
@@ -186,60 +193,167 @@ function updateTracker() {
       transitionData += subgraph
    }
 
-   transitionData += lastTransition
+   if (lastLocation != "") {
+      transitionData += `${lastLocation}:::last\n`
+   }
    fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}\n${checkData}`, (err) => {
+      if (err) throw err
+   })
+   fs.writeFile(rightOut, rightLocationString, (err) => {
       if (err) throw err
    })
 }
 
 function updateLocation() {
-   const r_transitionChange = /(?<=\[INFO\]:\[Hkmp\.Game\.Client\.ClientManager\] ).*(?=\n|$)/gm
+   const r_transitionChange = /(?<=\[INFO\]:\[Hkmp\.Game\.Client\.ClientManager\] Scene changed from ).*(?=\n|$)/gm
    const modLogFile = fs.readFileSync(modLog, 'utf-8')
    const location = modLogFile.match(r_transitionChange)?.at(-1).match(/\b(\w+)$/)[0]
    
-   var doors = transitionTable[location]
-   var secondLayer = []
-   var transitionData = ``
-   if (!location || !doors) { return }
-   for (const [fromDoor, toId] of Object.entries(doors)) {
-         var nameFrom = special[location]?.[0] ?? location
-         var nameTo = special[toId[0]]?.[0] ?? toId[0]
-         transitionData += `${location}([${nameFrom}]) -- ${fromDoor} --> ${toId[0]}([${nameTo}])\n`
-         secondLayer.push(toId[0])
-         if (special[location]?.[1]) {
-            transitionData += `${location}:::${special[location][1]}\n`
-         }
-         if (special[toId[0]]?.[1]) {
-            transitionData += `${toId[0]}:::${special[toId[0]][1]}\n`
-         }
-   }
-   for (const location2 of secondLayer) {
-      doors = transitionTable[location2]
+   { // Local map
+      var doors = transitionTable[location]
+      var secondLayer = []
+      var transitionData = ``
+      var chartLocal = ""
+      if (!location || !doors || lastLocation == location) { return }
+      lastLocation = location
       for (const [fromDoor, toId] of Object.entries(doors)) {
-         var nameFrom = special[location2]?.[0] ?? location2
-         var nameTo = special[toId[0]]?.[0] ?? toId[0]
-         transitionData += `${location2}([${nameFrom}]) -- ${fromDoor} --> ${toId[0]}([${nameTo}])\n`
-         if (special[location2]?.[1]) {
-            transitionData += `${location2}:::${special[location2][1]}\n`
+            var nameFrom = location
+            var nameTo = toId[0]
+            transitionData += `${styleRoom(nameFrom)} -- ${fromDoor} --> ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
+            secondLayer.push(toId[0])
+      }
+      for (const location2 of secondLayer) {
+         doors = transitionTable[location2]
+         for (const [fromDoor, toId] of Object.entries(doors)) {
+            var nameFrom = location2
+            var nameTo = toId[0]
+            transitionData += `${styleRoom(nameFrom)} -- ${fromDoor} --> ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
          }
-         if (special[toId[0]]?.[1]) {
-            transitionData += `${toId[0]}:::${special[toId[0]][1]}\n`
+      }
+      secondLayer.push(location)
+      for (const room of secondLayer) {
+         if (checkTable[room]) {
+            transitionData += `${room}:::check\n`
+         }
+         if (avaliableTransitionTable[room]) {
+            transitionData += `${room}:::transition\n`
          }
       }
-   }
-   secondLayer.push(location)
-   for (const room of secondLayer) {
-      if (checkTable[room]) {
-         transitionData += `${room}:::check\n`
-      }
-      if (avaliableTransitionTable[room]) {
-         transitionData += `${room}:::transition\n`
-      }
+      transitionData += `${lastLocation}:::last\n`
+      chartLocal = `# Local map\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n\n${transitionData}\n\`\`\`\n`
    }
 
-   fs.writeFile(lastOut, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`, (err) => {
+   { // Nearest Transition
+      var BFSqueue = []
+      var visited = {}
+      var dist = {}
+      var pred = {}
+      var foundTransition = false
+      var foundCheck = false
+      var transitionString = ""
+      var checkString = ""
+      var transitionChart = ""
+      var checkChart = ""
+
+      visited[location] = true
+      dist[location] = 0
+      BFSqueue.push(location)
+
+      while (BFSqueue.length != 0) {
+         var u = BFSqueue.shift()
+         for (const frontVal of Object.values(transitionTable[u])) {
+            const front = frontVal[0]
+            if (!visited[front]) {
+               console.log(front)
+               visited[front] = true
+               dist[front] = dist[u] + 1
+               pred[front] = u
+
+               BFSqueue.push(front)
+               if (avaliableTransitionTable[front] && !foundTransition) {
+                  foundTransition = true
+                  // Generate Path
+                  var currPrint = u
+                  var predPrint = pred[u]
+                  while (predPrint) {
+                     var door = ""
+                     for (const [doorTrans, toRoom] of Object.entries(transitionTable[currPrint])) { // Find door
+                        if (toRoom[0] == predPrint) {
+                           door = toRoom[1]
+                           break
+                        }
+                     }
+                     transitionString += `${styleRoom(predPrint)} -- ${door} --> ${styleRoom(currPrint)}\n${checkRoom(currPrint)}${checkRoom(predPrint)}`
+                     currPrint = predPrint
+                     predPrint = pred[currPrint]
+                  }
+                  for (const [doorTrans, toRoom] of Object.entries(transitionTable[front])) { // Find door
+                     if (toRoom[0] == u) {
+                        door = toRoom[1]
+                        break
+                     }
+                  }
+                  transitionString += `${styleRoom(u)} -- ${door} --> ${styleRoom(front)}\n${checkRoom(u)}${checkRoom(front)}`
+               }
+               if (checkTable[front] && !foundCheck) {
+                  foundCheck = true
+                  // Generate Path
+                  var currPrint = u
+                  var predPrint = pred[u]
+                  while (predPrint) {
+                     var door = ""
+                     for (const [doorTrans, toRoom] of Object.entries(transitionTable[currPrint])) { // Find door
+                        if (toRoom[0] == predPrint) {
+                           door = toRoom[1]
+                           break
+                        }
+                     }
+                     checkString += `${styleRoom(predPrint)} -- ${door} --> ${styleRoom(currPrint)}\n${checkRoom(currPrint)}${checkRoom(predPrint)}`
+                     currPrint = predPrint
+                     predPrint = pred[currPrint]
+                  }
+                  for (const [doorTrans, toRoom] of Object.entries(transitionTable[front])) { // Find door
+                     if (toRoom[0] == u) {
+                        door = toRoom[1]
+                        break
+                     }
+                  }
+                  checkString += `${styleRoom(u)} -- ${door} --> ${styleRoom(front)}\n${checkRoom(u)}${checkRoom(front)}`
+               }
+            }
+         }
+         if (foundTransition && foundCheck) { break }
+      }
+      transitionChart = `# Nearest transition\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${transitionString}\n\`\`\`\n`
+      checkChart = `# Nearest check\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${checkString}\n\`\`\`\n`
+   }
+
+   updateTracker()
+   fs.writeFile(lastOut, `${chartLocal}${transitionChart}${checkChart}`, (err) => {
       if (err) throw err
    })
+}
+
+function styleRoom(room) {
+   var name = special[room] ? `${room}([${special[room][0]}])` : `${room}([${room}])`
+   //var name = room
+   if (lastLocation == room) {
+      name = `${name}:::last`
+   } else {
+      name = special[room]?.[1] ? `${name}:::${special[room]?.[1]}` : name
+   }
+   return name
+}
+
+function checkRoom(room) {
+   var addStyle = ""
+   if (avaliableTransitionTable[room]) {
+      addStyle += `${room}:::transition\n`
+   }
+   if (checkTable[room]) {
+      addStyle += `${room}:::check\n`
+   }
+   return addStyle
 }
 
 start()
