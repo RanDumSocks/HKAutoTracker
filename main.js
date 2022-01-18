@@ -97,9 +97,11 @@ async function start() {
    updateLocation()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
+      updateLocation()
    })
    fs.watchFile(modLog, { interval: 500 }, async (curr, prev) => {
       updateLocation()
+      updateTracker()
    })
    console.log("Tracker running, you may now minimise this window.")
 }
@@ -264,7 +266,6 @@ function updateLocation() {
          for (const frontVal of Object.values(transitionTable[u])) {
             const front = frontVal[0]
             if (!visited[front]) {
-               console.log(front)
                visited[front] = true
                dist[front] = dist[u] + 1
                pred[front] = u
@@ -328,7 +329,6 @@ function updateLocation() {
       checkChart = `# Nearest check\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${checkString}\n\`\`\`\n`
    }
 
-   updateTracker()
    fs.writeFile(lastOut, `${chartLocal}${transitionChart}${checkChart}`, (err) => {
       if (err) throw err
    })
