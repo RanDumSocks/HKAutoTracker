@@ -8,7 +8,7 @@ This project is so bodged, I am using everything exactly how it was not intended
 - Full dynamic room mapping as a flow chart
 - Shows which rooms have reachable unchecked transitions and item checks
 - List of rooms which have unchecked right transitions, useful for finding black egg temple
-- Local map view
+- Local map view (must have [HKMP](https://github.com/Extremelyd1/HKMP) installed)
 	- Shows your current room, and immediate transitions, displaying what door leads to what adjacent room
 	- Searches for the nearest unchecked transition and item check and displays the shortest path to get there
 
