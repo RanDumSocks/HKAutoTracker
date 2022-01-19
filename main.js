@@ -1,8 +1,10 @@
+console.log("...Starting tracker...")
 const fs = require('fs')
 const path = require('path')
 const root = path.resolve(process.env.APPDATA, "../LocalLow/Team Cherry/Hollow Knight/Randomizer 4/Recent/")
 const helperLog = path.resolve(root, "HelperLog.txt")
 const modLog = path.resolve(root, "../../ModLog.txt")
+const spoilerLog = path.resolve(root, "RawSpoiler.json")
 const output = "HKAutotrack.md"
 const lastOut = "localTracker.md"
 const rightOut = "rightLocations.md"
@@ -79,7 +81,7 @@ classDef check color:#3ab020;
 classDef last fill:#022e00;
 `
 
-var locationData = JSON.parse(fs.readFileSync('locations.json'))
+var locationData = JSON.parse(fs.readFileSync(spoilerLog))
 var termsData = JSON.parse(fs.readFileSync('terms.json'))
 var locationLogic = {}
 
@@ -87,13 +89,12 @@ termsData.push("RIGHTBALDURS")
 
 var regexTerms = new RegExp(termsData.join("|"), "g")
 
-for (const location of locationData) {
-   var logic = location.logic.replaceAll(regexTerms, "")
-   locationLogic[location.name] = logic.match(r_locationLogic)?.[0]
+for (const itemSpoiler of locationData.itemPlacements) {
+   var logic = itemSpoiler.location.logic.logic.replaceAll(regexTerms, "")
+   locationLogic[itemSpoiler.location.logic.name] = logic.match(r_locationLogic)?.[0]
 }
 
 async function start() {
-   console.log("...Starting tracker...")
    updateTracker()
    //updateLocation()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
