@@ -95,7 +95,7 @@ for (const location of locationData) {
 async function start() {
    console.log("...Starting tracker...")
    updateTracker()
-   updateLocation()
+   //updateLocation()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
       updateLocation()
@@ -189,6 +189,7 @@ function updateTracker() {
       }
       transitionData += subgraph
    }
+
    fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`, (err) => {
       if (err) throw err
    })
@@ -208,7 +209,6 @@ function updateLocation() {
       var transitionData = ``
       var chartLocal = ""
       if (!location || !doors || lastLocation == location) { return }
-      updateTracker()
       lastLocation = location
       for (const [fromDoor, toId] of Object.entries(doors)) {
             var nameFrom = location
@@ -322,6 +322,7 @@ function updateLocation() {
       checkChart = `# Nearest check\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${checkString}\n\`\`\`\n`
    }
 
+   updateTracker()
    fs.writeFile(lastOut, `${chartLocal}${transitionChart}${checkChart}`, (err) => {
       if (err) throw err
    })
