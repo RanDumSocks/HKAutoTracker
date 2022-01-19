@@ -16,7 +16,7 @@ This project is so bodged, I am using everything exactly how it was not intended
 1) Download and install dependencies
     - [Obsidian](https://obsidian.md)
     - [Git](https://git-scm.com/download/win)
-    - [Node.js]([https://nodejs.org/en/](https://nodejs.org/en/ "https://nodejs.org/en/")
+    - [Node.js](https://nodejs.org/en/)
 2) Find a place to put the tracker folder on your computer, right-click and select "Git Bash Here"
 3) In the command window, enter the following commands
 ```bash
