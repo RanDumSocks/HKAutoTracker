@@ -29,6 +29,7 @@ node main.js
 5) Select the folder you downloaded in step 3
 
 And boom! Youre done, that window is where all your auto tracking will be, maps and all :)
+If you just get text on the screen, click the glasses icon in the top-right of the window.
 
 For path highlighting (highlight paths when you hover your mouse over them, useful when the map gets really complicated, non-euclidian spaces are ugly) go to Settings (cog on lower left of the window) > Appearance >  CSS snippets > enable "hover"
 
