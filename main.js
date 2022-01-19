@@ -189,7 +189,6 @@ function updateTracker() {
       }
       transitionData += subgraph
    }
-   console.log("written")
    fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`, (err) => {
       if (err) throw err
    })
