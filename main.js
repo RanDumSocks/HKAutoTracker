@@ -64,8 +64,9 @@ const special = {
    Fungus1_37: [ 'Stone Sanctuary Bench', 'bench' ],
    Room_Charm_Shop: [ 'Salubra', 'shop' ],
    Fungus1_01b: [ 'Greenpath Waterfall Bench', 'bench' ],
-   Ruins1_29: [ 'City Storerooms Stag', 'bench'],
-   Fungus2_26: [ 'Leg Eater', 'shop']
+   Fungus2_26: [ 'Leg Eater', 'shop'],
+   Room_Town_Stag_Station: ["Dirtmouth Stag", "stag"],
+   Abyss_22: ["Hidden Station", "bench"]
 }
 
 
@@ -101,15 +102,15 @@ async function start() {
    })
    fs.watchFile(modLog, { interval: 500 }, async (curr, prev) => {
       updateLocation()
-      updateTracker()
    })
    console.log("Tracker running, you may now minimise this window.")
 }
 
 function updateTracker() {
    var transitionData = ""
-   var checkData = ""
    var rightLocationString = ""
+   checkTable = {}
+   avaliableTransitionTable = {}
    const helperLogFile = fs.readFileSync(helperLog, 'utf-8').replaceAll(/\*/g, "")
 
    var startInfo = false
@@ -149,7 +150,7 @@ function updateTracker() {
             startInfo = false
          } else {
             var transitionLocation = line.match(r_helperLocation)[0]
-            checkData += `${transitionLocation}:::transition\n`
+
             avaliableTransitionTable[transitionLocation] = true
             if (r_right.test(line)) {
                rightLocationString += `- ${transitionLocation}\n`
@@ -165,7 +166,7 @@ function updateTracker() {
          } else {
             var item = line.replaceAll(/\r?\n? /g, "")
             if (locationLogic[item]) {
-               checkData += `${locationLogic[item]}:::check\n`
+
                checkTable[locationLogic[item]] = true
             }
          }
@@ -180,25 +181,16 @@ function updateTracker() {
       var subgraph = ``
       for (const [fromDoor, toId] of Object.entries(doors)) {
          if (connections[`${toId[0]}:${toId[1]}`] != `${location}:${fromDoor}`) {
-            var nameFrom = special[location]?.[0] ?? location
-            var nameTo = special[toId[0]]?.[0] ?? toId[0]
-            subgraph += `${location}([${nameFrom}]) --- ${toId[0]}([${nameTo}])\n`
+            var nameFrom = location
+            var nameTo = toId[0]
+            subgraph += `${styleRoom(nameFrom)} --- ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
             connections[`${location}:${fromDoor}`] = `${toId[0]}:${toId[1]}`
-            if (special[location]?.[1]) {
-               subgraph += `${location}:::${special[location][1]}\n`
-            }
-            if (special[toId[0]]?.[1]) {
-               subgraph += `${toId[0]}:::${special[toId[0]][1]}\n`
-            }
          }
       }
       transitionData += subgraph
    }
-
-   if (lastLocation != "") {
-      transitionData += `${lastLocation}:::last\n`
-   }
-   fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}\n${checkData}`, (err) => {
+   console.log("written")
+   fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`, (err) => {
       if (err) throw err
    })
    fs.writeFile(rightOut, rightLocationString, (err) => {
@@ -217,6 +209,7 @@ function updateLocation() {
       var transitionData = ``
       var chartLocal = ""
       if (!location || !doors || lastLocation == location) { return }
+      updateTracker()
       lastLocation = location
       for (const [fromDoor, toId] of Object.entries(doors)) {
             var nameFrom = location
@@ -263,6 +256,7 @@ function updateLocation() {
 
       while (BFSqueue.length != 0) {
          var u = BFSqueue.shift()
+         if (!transitionTable[u]) { continue }
          for (const frontVal of Object.values(transitionTable[u])) {
             const front = frontVal[0]
             if (!visited[front]) {
