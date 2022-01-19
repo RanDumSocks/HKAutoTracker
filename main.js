@@ -123,7 +123,7 @@ function updateTracker() {
    const r_transitionTo = /(?<=-->)[a-zA-Z0-9_]*/
    const r_doorTransitions = /(?<=\[)[a-zA-Z0-9_]*(?=\])/g
    const r_right = /right/g
-   helperLogFile.split(/\r?\n/).forEach(line =>  {
+   helperLogFile.split(/\r?\n/).forEach(line => {
       if (startTransition) {
          if (line.replaceAll(/\r?\n? /g) == "") {
             startTransition = false
