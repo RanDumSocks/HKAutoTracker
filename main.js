@@ -5,19 +5,25 @@ const root = path.resolve(process.env.APPDATA, "../LocalLow/Team Cherry/Hollow K
 const helperLog = path.resolve(root, "HelperLog.txt")
 const modLog = path.resolve(root, "../../ModLog.txt")
 const spoilerLog = path.resolve(root, "RawSpoiler.json")
+const dict = "mapDict.json"
 const output = "HKAutotrack.md"
 const lastOut = "localTracker.md"
 const rightOut = "rightLocations.md"
+const settingsFile = "settings.json"
 
 const r_helperLocation = /[a-zA-Z0-9_]*(?=\[)/
 const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[| |$))/
+
+var mapTrackerString = ""
+var rightLocationString = ""
+var localTrackerString = ""
 
 var transitionTable = {}
 var checkTable = {}
 var avaliableTransitionTable = {}
 var lastLocation = ""
 
-const special = {
+const specialCustom = {
    Crossroads_04: [ 'Salubra Bench', 'bench' ],
    Tutorial_01: [ 'Start', 'start' ],
    RestingGrounds_12: [ 'Grey Mourner Bench', 'bench' ],
@@ -68,9 +74,10 @@ const special = {
    Fungus1_01b: [ 'Greenpath Waterfall Bench', 'bench' ],
    Fungus2_26: [ 'Leg Eater', 'shop'],
    Room_Town_Stag_Station: ["Dirtmouth Stag", "stag"],
-   Abyss_22: ["Hidden Station", "bench"]
+   Abyss_22: ["Hidden Station", "bench"],
+   Crossroads_38: ["Grubfather", "shop"]
 }
-
+const special = { ...JSON.parse(fs.readFileSync(dict)), ...specialCustom }
 
 const classDefs = `
 classDef stag fill:#a775d9;
@@ -94,22 +101,46 @@ for (const itemSpoiler of locationData.itemPlacements) {
    locationLogic[itemSpoiler.location.logic.name] = logic.match(r_locationLogic)?.[0]
 }
 
+var options = {}
+{ // Load options
+
+   let defaultOptions = {
+      translationType: 'full'
+   }
+
+   if (fs.existsSync(settingsFile)) {
+      options = {...defaultOptions, ...JSON.parse(fs.readFileSync(settingsFile))}
+   } else {
+      options = defaultOptions
+   }
+   fs.writeFile(settingsFile, JSON.stringify(options, null, 3), (err) => {
+      if (err) throw err
+   })
+
+   if (options.translationType != 'full' && options.translationType != 'basic' && options.translationType != 'landmark' && options.translationType != 'none') {
+      console.log(`Invalid translationType option "${options.translationType}". Must be either "full", "basic", "landmark", or "none".`)
+   }
+}
+
 async function start() {
+   updateLocation()
    updateTracker()
-   //updateLocation()
+   updateFiles()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
-      updateLocation()
+      updateFiles(true)
    })
    fs.watchFile(modLog, { interval: 500 }, async (curr, prev) => {
       updateLocation()
+      updateTracker()
+      updateFiles()
    })
    console.log("Tracker running, you may now minimise this window.")
 }
 
 function updateTracker() {
    var transitionData = ""
-   var rightLocationString = ""
+   rightLocationString = ""
    checkTable = {}
    avaliableTransitionTable = {}
    const helperLogFile = fs.readFileSync(helperLog, 'utf-8').replaceAll(/\*/g, "")
@@ -191,12 +222,7 @@ function updateTracker() {
       transitionData += subgraph
    }
 
-   fs.writeFile(output, `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`, (err) => {
-      if (err) throw err
-   })
-   fs.writeFile(rightOut, rightLocationString, (err) => {
-      if (err) throw err
-   })
+   mapTrackerString = `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`
 }
 
 function updateLocation() {
@@ -323,14 +349,20 @@ function updateLocation() {
       checkChart = `# Nearest check\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${checkString}\n\`\`\`\n`
    }
 
-   updateTracker()
-   fs.writeFile(lastOut, `${chartLocal}${transitionChart}${checkChart}`, (err) => {
-      if (err) throw err
-   })
+   localTrackerString = `${chartLocal}${transitionChart}${checkChart}`
 }
 
 function styleRoom(room) {
-   var name = special[room] ? `${room}([${special[room][0]}])` : `${room}([${room}])`
+   var name = ""
+   if (options.translationType == 'full') {
+      name = special[room] ? `${room}([${special[room][0].replaceAll(/_/g, " ")}])` : `${room}([${room}])`
+   } else if (options.translationType == 'basic') {
+      name = special[room] && special[room]?.[1] && (special[room][1] == 'bench' || special[room][1] == 'shop' || special[room][1] == 'stag') ? `${room}([${special[room][0].replaceAll(/_/g, " ")}])` : `${room}([${room}])`
+   } else if (options.translationType == 'landmark') {
+      name = special[room] && specialCustom[room]?.[1] ? `${room}([${special[room][0].replaceAll(/_/g, " ")}])` : `${room}([${room}])`
+   } else if (options.translationType == 'landmark') {
+      name = `${room}([${room}])`
+   }
    //var name = room
    if (lastLocation == room) {
       name = `${name}:::last`
@@ -349,6 +381,20 @@ function checkRoom(room) {
       addStyle += `${room}:::check\n`
    }
    return addStyle
+}
+
+async function updateFiles(skipTracker) {
+   if (!skipTracker) {
+      fs.writeFile(output, mapTrackerString, (err) => {
+         if (err) throw err
+      })
+   }
+   fs.writeFile(rightOut, rightLocationString, (err) => {
+      if (err) throw err
+   })
+   fs.writeFile(lastOut, localTrackerString, (err) => {
+      if (err) throw err
+   })
 }
 
 start()

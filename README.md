@@ -4,6 +4,11 @@ With that being said, this is a auto-tracker for the [Randomiser 4](https://gith
 
 This project is so bodged, I am using everything exactly how it was not intended to be used, don't hurt me.
 
+## Special Thanks
+[Jamie](https://github.com/ManicJamie) for the [room name dictionary](https://github.com/ManicJamie/HKTranslator/blob/master/TranslatorDictionary.xml)
+
+asimard for formatting the dictionary and room tagging
+
 ## Features
 - Full dynamic room mapping as a flow chart
 - Shows which rooms have reachable unchecked transitions and item checks
@@ -77,6 +82,14 @@ The map is colour coded, these are what the colours mean:
 	- unchecked reachable item check
 - Orange boarder
 	- unchecked reachable screen transition
+
+## Options
+The options file is located in `settings.json`.
+Run the program once for it to show up.
+
+| Option Name | Values | Description |
+| --- | --- | --- |
+ | `translationType` | "full", "basic", "landmark", or "none" | Translates default room ID names with more human readable room names. Basic only changes the names of important locations such as shops and benches, and landmark builds on top of that, adding large room locations with custom names in game, and high transition areas. |
 
 ## Feedback
 This is a horrible and dodgy implementation of an auto-tracker, but it works, quite well!
