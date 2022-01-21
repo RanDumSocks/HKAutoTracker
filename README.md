@@ -10,7 +10,7 @@ This project is so bodged, I am using everything exactly how it was not intended
 ## Special Thanks
 [Jamie](https://github.com/ManicJamie) for the [room name dictionary](https://github.com/ManicJamie/HKTranslator/blob/master/TranslatorDictionary.xml)
 
-asimard for formatting the dictionary and room tagging
+[asimard](https://github.com/asimard1) for formatting the dictionary and room tagging
 
 ## Features
 - Full dynamic room mapping as a flow chart
