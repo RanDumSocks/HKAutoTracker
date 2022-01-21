@@ -4,6 +4,9 @@ With that being said, this is a auto-tracker for the [Randomiser 4](https://gith
 
 This project is so bodged, I am using everything exactly how it was not intended to be used, don't hurt me.
 
+![image](https://user-images.githubusercontent.com/23219465/150392977-08500177-088c-4021-919b-a5baaa348a31.png)
+![image](https://user-images.githubusercontent.com/23219465/150392992-fc46349d-598b-476a-9319-53e00cb84682.png)
+
 ## Special Thanks
 [Jamie](https://github.com/ManicJamie) for the [room name dictionary](https://github.com/ManicJamie/HKTranslator/blob/master/TranslatorDictionary.xml)
 
