@@ -101,6 +101,7 @@ Run the program once for it to show up.
 | Option Name | Values | Description |
 | --- | --- | --- |
  | `translationType` | "full", "basic", "landmark", or "none" | Translates default room ID names with more human readable room names. Basic only changes the names of important locations such as shops and benches, and landmark builds on top of that, adding large room locations with custom names in game, and high transition areas. |
+ | `mapOrientation` | "TB", "TD", "BT", "RL", or "LR" | Orientation of the main map. `TB` / `TD` - top to bottom, `BT` -  bottom to top, `RL` -  right to left, `LR` -  left to right. |
 
 ## Feedback
 This is a horrible and dodgy implementation of an auto-tracker, but it works, quite well!

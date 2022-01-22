@@ -4,6 +4,7 @@ const path = require('path')
 const root = path.resolve(process.env.APPDATA, "../LocalLow/Team Cherry/Hollow Knight/Randomizer 4/Recent/")
 const helperLog = path.resolve(root, "HelperLog.txt")
 const modLog = path.resolve(root, "../../ModLog.txt")
+const modLogAppend = path.resolve(root, "../../ModLogAppend.txt")
 const spoilerLog = path.resolve(root, "RawSpoiler.json")
 const dict = "mapDict.json"
 const output = "HKAutotrack.md"
@@ -105,11 +106,17 @@ var options = {}
 { // Load options
 
    let defaultOptions = {
-      translationType: 'full'
+      translationType: 'full',
+      mapOrientation: 'LR'
    }
 
    if (fs.existsSync(settingsFile)) {
-      options = {...defaultOptions, ...JSON.parse(fs.readFileSync(settingsFile))}
+      try {
+         options = {...defaultOptions, ...JSON.parse(fs.readFileSync(settingsFile))}
+      } catch (err) {
+         console.log("Settings file corrupt, resetting to default settings.")
+         options = defaultOptions
+      }
    } else {
       options = defaultOptions
    }
@@ -117,8 +124,11 @@ var options = {}
       if (err) throw err
    })
 
-   if (options.translationType != 'full' && options.translationType != 'basic' && options.translationType != 'landmark' && options.translationType != 'none') {
+   if (!['full', 'basic', 'landmark', 'none'].includes(options.translationType)) {
       console.log(`Invalid translationType option "${options.translationType}". Must be either "full", "basic", "landmark", or "none".`)
+   }
+   if (!['TB', 'TD', 'BT', 'RL', 'LR'].includes(options.mapOrientation)) {
+      console.log(`Invalid mapOrientation option "${options.mapOrientation}". Must be either "TB", "TD", "BT", "RL", or "LR".`)
    }
 }
 
@@ -224,12 +234,16 @@ function updateTracker() {
       transitionData += subgraph
    }
 
-   mapTrackerString = `\`\`\`mermaid\nflowchart LR\n${classDefs}\n\n${transitionData}`
+   mapTrackerString = `\`\`\`mermaid\nflowchart ${options.mapOrientation}\n${classDefs}\n\n${transitionData}`
 }
 
 function updateLocation() {
    const r_transitionChange = /(?<=\[INFO\]:\[Hkmp\.Game\.Client\.ClientManager\] Scene changed from ).*(?=\n|$)/gm
    const modLogFile = fs.readFileSync(modLog, 'utf-8')
+
+   fs.truncate(modLog, 0, () => {})
+   fs.appendFile(modLogAppend, modLogFile, (err) => { if (err) throw err })
+
    const location = modLogFile.match(r_transitionChange)?.at(-1).match(/\b(\w+)$/)[0]
    
    { // Local map
