@@ -45,12 +45,20 @@ For path highlighting (highlight paths when you hover your mouse over them, usef
 If the hover option doesn't show up, hit the refresh button next to CSS snippets.
 
 ## Running
+
+Simply double-click on `run.sh` to start the auto tracking script.
+
+### Manual Running
 Whenever you want to run the tracker again:
 1) Navigate to the auto-tracker folder, right click inside of it and select "Git Bash Here"
 2) In the window, enter in `node main.js`
 3) Repeat steps 4 & 5 in Set-Up
 
 ## Updating
+
+Simply click on `update.sh` to update the tracker to its latest version.
+
+### Manual Updating
 If the tracker is still running (after completing the Running steps), in the command window:
 
 ctrl-c (this stops the tracker)

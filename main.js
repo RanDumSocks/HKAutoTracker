@@ -128,9 +128,11 @@ async function start() {
    updateFiles()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
+      updateLocation()
       updateFiles()
    })
    fs.watchFile(modLog, { interval: 500 }, async (curr, prev) => {
+      updateTracker()
       updateLocation()
       updateTracker()
       updateFiles()
@@ -222,7 +224,7 @@ function updateTracker() {
       transitionData += subgraph
    }
 
-   mapTrackerString = `\`\`\`mermaid\nflowchart TD\n${classDefs}\n\n${transitionData}`
+   mapTrackerString = `\`\`\`mermaid\nflowchart LR\n${classDefs}\n\n${transitionData}`
 }
 
 function updateLocation() {
@@ -383,18 +385,29 @@ function checkRoom(room) {
    return addStyle
 }
 
-async function updateFiles(skipTracker) {
-   if (!skipTracker) {
+var lastMapTrackerString = ""
+var lastRightLocationString = ""
+var lastLocalTrackerString = ""
+async function updateFiles() {
+   if (mapTrackerString != lastMapTrackerString) {
       fs.writeFile(output, mapTrackerString, (err) => {
          if (err) throw err
       })
+      lastMapTrackerString = mapTrackerString
    }
-   fs.writeFile(rightOut, rightLocationString, (err) => {
-      if (err) throw err
-   })
-   fs.writeFile(lastOut, localTrackerString, (err) => {
-      if (err) throw err
-   })
+
+   if (rightLocationString != lastRightLocationString) {
+      fs.writeFile(rightOut, rightLocationString, (err) => {
+         if (err) throw err
+      })
+      lastRightLocationString = rightLocationString
+   }
+   if (lastLocalTrackerString != localTrackerString) {
+      fs.writeFile(lastOut, localTrackerString, (err) => {
+         if (err) throw err
+      })
+      lastLocalTrackerString = localTrackerString
+   }
 }
 
 start()
