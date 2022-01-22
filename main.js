@@ -128,7 +128,7 @@ async function start() {
    updateFiles()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
-      updateFiles(true)
+      updateFiles()
    })
    fs.watchFile(modLog, { interval: 500 }, async (curr, prev) => {
       updateLocation()
