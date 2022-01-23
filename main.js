@@ -19,6 +19,12 @@ var mapTrackerString = ""
 var rightLocationString = ""
 var localTrackerString = ""
 
+var defaultTransitionTable = {
+   Ruins2_10: { elevator: ["Ruins2_10b", "elevator"] },
+   Ruins2_10b: { elevator: ["Ruins2_10", "elevator"] },
+   Crossroads_49: { elevator: ["Crossroads_49b", "elevator"] },
+   Crossroads_49b: { elevator: ["Crossroads_49", "elevator"] },
+}
 var transitionTable = {}
 var checkTable = {}
 var avaliableTransitionTable = {}
@@ -76,7 +82,8 @@ const specialCustom = {
    Fungus2_26: [ 'Leg Eater', 'shop'],
    Room_Town_Stag_Station: ["Dirtmouth Stag", "stag"],
    Abyss_22: ["Hidden Station", "bench"],
-   Crossroads_38: ["Grubfather", "shop"]
+   Crossroads_38: ["Grubfather", "shop"],
+   Cliffs_03: ["Stag Nest", "stag"]
 }
 const special = { ...JSON.parse(fs.readFileSync(dict)), ...specialCustom }
 
@@ -155,6 +162,10 @@ function updateTracker() {
    rightLocationString = ""
    checkTable = {}
    avaliableTransitionTable = {}
+   addedStyles = []
+   addedNames = []
+   nameString = ""
+   transitionTable = defaultTransitionTable
    const helperLogFile = fs.readFileSync(helperLog, 'utf-8').replaceAll(/\*/g, "")
 
    var startInfo = false
@@ -227,14 +238,33 @@ function updateTracker() {
          if (connections[`${toId[0]}:${toId[1]}`] != `${location}:${fromDoor}`) {
             var nameFrom = location
             var nameTo = toId[0]
-            subgraph += `${styleRoom(nameFrom)} --- ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
+            subgraph += `${nameFrom} --- ${nameTo}\n`
+
+            var fromCheck = checkRoom(nameFrom)
+            var toCheck = checkRoom(nameTo)
+            if (!addedStyles.includes(nameFrom)) {
+               addedStyles.push(nameFrom)
+               subgraph += fromCheck
+            }
+            if (!addedStyles.includes(nameTo)) {
+               addedStyles.push(nameTo)
+               subgraph += toCheck
+            }
+            if (!addedNames.includes(nameFrom)) {
+               addedNames.push(nameFrom)
+               nameString += `${styleRoom(nameFrom)}\n`
+            }
+            if (!addedNames.includes(nameTo)) {
+               addedNames.push(nameTo)
+               nameString += `${styleRoom(nameTo)}\n`
+            }
             connections[`${location}:${fromDoor}`] = `${toId[0]}:${toId[1]}`
          }
       }
       transitionData += subgraph
    }
 
-   mapTrackerString = `\`\`\`mermaid\nflowchart ${options.mapOrientation}\n${classDefs}\n\n${transitionData}`
+   mapTrackerString = `\`\`\`mermaid\nflowchart ${options.mapOrientation}\n${classDefs}\n\n${nameString}\n${transitionData}`
 }
 
 function updateLocation() {
@@ -264,7 +294,9 @@ function updateLocation() {
          for (const [fromDoor, toId] of Object.entries(doors)) {
             var nameFrom = location2
             var nameTo = toId[0]
-            transitionData += `${styleRoom(nameFrom)} -- ${fromDoor} --> ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
+            if (nameTo != location) {
+               transitionData += `${styleRoom(nameFrom)} -- ${fromDoor} --> ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
+            }
          }
       }
       secondLayer.push(location)
@@ -287,10 +319,13 @@ function updateLocation() {
       var pred = {}
       var foundTransition = false
       var foundCheck = false
+      var foundBench
       var transitionString = ""
       var checkString = ""
+      var benchString = ""
       var transitionChart = ""
       var checkChart = ""
+      var benchChart = ""
 
       visited[location] = true
       dist[location] = 0
@@ -307,7 +342,7 @@ function updateLocation() {
                pred[front] = u
 
                BFSqueue.push(front)
-               if (avaliableTransitionTable[front] && !foundTransition) {
+               if (avaliableTransitionTable[front] && !foundTransition) { // Transition path
                   foundTransition = true
                   // Generate Path
                   var currPrint = u
@@ -324,7 +359,7 @@ function updateLocation() {
                      currPrint = predPrint
                      predPrint = pred[currPrint]
                   }
-                  for (const [doorTrans, toRoom] of Object.entries(transitionTable[front])) { // Find door
+                  for (const [doorTrans, toRoom] of Object.entries(transitionTable[front])) {
                      if (toRoom[0] == u) {
                         door = toRoom[1]
                         break
@@ -332,7 +367,7 @@ function updateLocation() {
                   }
                   transitionString += `${styleRoom(u)} -- ${door} --> ${styleRoom(front)}\n${checkRoom(u)}${checkRoom(front)}`
                }
-               if (checkTable[front] && !foundCheck) {
+               if (checkTable[front] && !foundCheck) { // Check path
                   foundCheck = true
                   // Generate Path
                   var currPrint = u
@@ -357,15 +392,41 @@ function updateLocation() {
                   }
                   checkString += `${styleRoom(u)} -- ${door} --> ${styleRoom(front)}\n${checkRoom(u)}${checkRoom(front)}`
                }
+               if (special[front]?.[1] == 'bench' && !foundBench) { // Check bench
+                  foundBench = true
+                  // Generate Path
+                  var currPrint = u
+                  var predPrint = pred[u]
+                  while (predPrint) {
+                     var door = ""
+                     for (const [doorTrans, toRoom] of Object.entries(transitionTable[currPrint])) { // Find door
+                        if (toRoom[0] == predPrint) {
+                           door = toRoom[1]
+                           break
+                        }
+                     }
+                     benchString += `${styleRoom(predPrint)} -- ${door} --> ${styleRoom(currPrint)}\n${checkRoom(currPrint)}${checkRoom(predPrint)}`
+                     currPrint = predPrint
+                     predPrint = pred[currPrint]
+                  }
+                  for (const [doorTrans, toRoom] of Object.entries(transitionTable[front])) { // Find door
+                     if (toRoom[0] == u) {
+                        door = toRoom[1]
+                        break
+                     }
+                  }
+                  benchString += `${styleRoom(u)} -- ${door} --> ${styleRoom(front)}\n${checkRoom(u)}${checkRoom(front)}`
+               }
             }
          }
          if (foundTransition && foundCheck) { break }
       }
       transitionChart = `# Nearest transition\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${transitionString}\n\`\`\`\n`
       checkChart = `# Nearest check\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${checkString}\n\`\`\`\n`
+      benchChart = `# Nearest bench\n\`\`\`mermaid\nflowchart LR\n${classDefs}\n${benchString}\n\`\`\`\n`
    }
 
-   localTrackerString = `${chartLocal}${transitionChart}${checkChart}`
+   localTrackerString = `${chartLocal}${transitionChart}${checkChart}${benchChart}`
 }
 
 function styleRoom(room) {
