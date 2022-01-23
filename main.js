@@ -302,6 +302,7 @@ function updateLocation(updateAnyway, onlyReport) {
       }
       for (const location2 of secondLayer) {
          doors = transitionTable[location2]
+         if (!doors) { continue }
          for (const [fromDoor, toId] of Object.entries(doors)) {
             var nameFrom = location2
             var nameTo = toId[0]
