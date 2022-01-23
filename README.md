@@ -4,8 +4,8 @@ With that being said, this is a auto-tracker for the [Randomiser 4](https://gith
 
 This project is so bodged, I am using everything exactly how it was not intended to be used, don't hurt me.
 
-![image](https://user-images.githubusercontent.com/23219465/150392977-08500177-088c-4021-919b-a5baaa348a31.png)
-![image](https://user-images.githubusercontent.com/23219465/150392992-fc46349d-598b-476a-9319-53e00cb84682.png)
+![image](https://user-images.githubusercontent.com/23219465/150667011-b843f72b-aa4e-4857-8f0a-495ac35d2f0d.png)
+![image](https://user-images.githubusercontent.com/23219465/150667025-71e2ca0a-738b-485b-977d-41ab8a90c0ca.png)
 
 ## Special Thanks
 [Jamie](https://github.com/ManicJamie) for the [room name dictionary](https://github.com/ManicJamie/HKTranslator/blob/master/TranslatorDictionary.xml)
@@ -19,6 +19,7 @@ This project is so bodged, I am using everything exactly how it was not intended
 - Local map view (must have [HKMP](https://github.com/Extremelyd1/HKMP) installed)
 	- Shows your current room, and immediate transitions, displaying what door leads to what adjacent room
 	- Searches for the nearest unchecked transition and item check and displays the shortest path to get there
+	- Shows closest bench to current location, good for telling your friends how to get to your location
 
 ## Set-up
 1) Download and install dependencies
@@ -90,7 +91,7 @@ The map is colour coded, these are what the colours mean:
 - Magenta background
 	- Stag stations without a bench
 - Green text
-	- unchecked reachable item check
+	- unchecked reachable item check with number of checks in brackets
 - Orange boarder
 	- unchecked reachable screen transition
 

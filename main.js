@@ -13,6 +13,7 @@ const rightOut = "rightLocations.md"
 const settingsFile = "settings.json"
 
 const r_helperLocation = /[a-zA-Z0-9_]*(?=\[)/
+const r_helperDoor = /(?<=\[)[a-zA-Z0-9_]*(?=\])/
 const r_locationLogic = /[a-zA-Z0-9_]*(?=(\[| |$))/
 
 var mapTrackerString = ""
@@ -94,6 +95,7 @@ classDef bench fill:#138d94;
 classDef transition stroke-width:4px,stroke:#d68b00;
 classDef check color:#3ab020;
 classDef last fill:#022e00;
+classDef unchecked fill:#9e3c03;
 `
 
 var locationData = JSON.parse(fs.readFileSync(spoilerLog))
@@ -145,14 +147,16 @@ async function start() {
    updateFiles()
    fs.watchFile(helperLog, { interval: 500 }, async (curr, prev) => {
       updateTracker()
-      updateLocation()
+      updateLocation(true)
       updateFiles()
    })
    fs.watchFile(modLog, { interval: 500 }, async (curr, prev) => {
-      updateTracker()
-      updateLocation()
-      updateTracker()
-      updateFiles()
+      if (updateLocation(false, true)) {
+         updateTracker()
+         updateLocation()
+         updateTracker()
+         updateFiles()
+      }
    })
    console.log("Tracker running, you may now minimise this window.")
 }
@@ -198,15 +202,18 @@ function updateTracker() {
          startTransition = true
       }
 
-
-
       if (startInfo) {
          if (line.replaceAll(/\r?\n? /g) == "") {
             startInfo = false
          } else {
             var transitionLocation = line.match(r_helperLocation)[0]
+            var transitionDoor = line.match(r_helperDoor)[0]
 
-            avaliableTransitionTable[transitionLocation] = true
+            if (avaliableTransitionTable[transitionLocation]) {
+               avaliableTransitionTable[transitionLocation].push(transitionDoor)
+            } else {
+               avaliableTransitionTable[transitionLocation] = [transitionDoor]
+            }
             if (r_right.test(line)) {
                rightLocationString += `- ${transitionLocation}\n`
             }
@@ -222,7 +229,11 @@ function updateTracker() {
             var item = line.replaceAll(/\r?\n? /g, "")
             if (locationLogic[item]) {
 
-               checkTable[locationLogic[item]] = true
+               if (checkTable[locationLogic[item]]) {
+                  checkTable[locationLogic[item]] += 1
+               } else {
+                  checkTable[locationLogic[item]] = 1
+               }
             }
          }
       }
@@ -267,21 +278,21 @@ function updateTracker() {
    mapTrackerString = `\`\`\`mermaid\nflowchart ${options.mapOrientation}\n${classDefs}\n\n${nameString}\n${transitionData}`
 }
 
-function updateLocation() {
+function updateLocation(updateAnyway, onlyReport) {
    const r_transitionChange = /(?<=\[INFO\]:\[Hkmp\.Game\.Client\.ClientManager\] Scene changed from ).*(?=\n|$)/gm
    const modLogFile = fs.readFileSync(modLog, 'utf-8')
 
-   fs.truncate(modLog, 0, () => {})
-   fs.appendFile(modLogAppend, modLogFile, (err) => { if (err) throw err })
-
-   const location = modLogFile.match(r_transitionChange)?.at(-1).match(/\b(\w+)$/)[0]
+   const location = updateAnyway ? lastLocation : modLogFile.match(r_transitionChange)?.at(-1).match(/\b(\w+)$/)[0]
    
    { // Local map
       var doors = transitionTable[location]
       var secondLayer = []
       var transitionData = ``
       var chartLocal = ""
-      if (!location || !doors || lastLocation == location) { return }
+      if ((!location || !doors) || (!updateAnyway && lastLocation == location)) { return false }
+      if (onlyReport) { return true }
+      fs.truncate(modLog, 0, () => {})
+      fs.appendFile(modLogAppend, modLogFile, (err) => { if (err) throw err })
       lastLocation = location
       for (const [fromDoor, toId] of Object.entries(doors)) {
             var nameFrom = location
@@ -296,6 +307,13 @@ function updateLocation() {
             var nameTo = toId[0]
             if (nameTo != location) {
                transitionData += `${styleRoom(nameFrom)} -- ${fromDoor} --> ${styleRoom(nameTo)}\n${checkRoom(nameFrom)}${checkRoom(nameTo)}`
+            }
+         }
+      }
+      for (const [transition, transitionCheck] of Object.entries(avaliableTransitionTable)) {
+         if (transition == location) {
+            for (const door of transitionCheck) {
+               transitionData += `${transition} -- ${door} --> UNCHECKED([UNCHECKED]):::unchecked\n`
             }
          }
       }
@@ -427,18 +445,20 @@ function updateLocation() {
    }
 
    localTrackerString = `${chartLocal}${transitionChart}${checkChart}${benchChart}`
+   return true
 }
 
 function styleRoom(room) {
    var name = ""
+   var number = checkTable[room] ? ` [${checkTable[room]}]` : ""
    if (options.translationType == 'full') {
-      name = special[room] ? `${room}([${special[room][0].replaceAll(/_/g, " ")}])` : `${room}([${room}])`
+      name = special[room] ? `${room}(["${special[room][0].replaceAll(/_/g, " ")}${number}"])` : `${room}(["${room}${number}"])`
    } else if (options.translationType == 'basic') {
-      name = special[room] && special[room]?.[1] && (special[room][1] == 'bench' || special[room][1] == 'shop' || special[room][1] == 'stag') ? `${room}([${special[room][0].replaceAll(/_/g, " ")}])` : `${room}([${room}])`
+      name = special[room] && special[room]?.[1] && (special[room][1] == 'bench' || special[room][1] == 'shop' || special[room][1] == 'stag') ? `${room}(["${special[room][0].replaceAll(/_/g, " ")}${number}"])` : `${room}(["${room}${number}"])`
    } else if (options.translationType == 'landmark') {
-      name = special[room] && specialCustom[room]?.[1] ? `${room}([${special[room][0].replaceAll(/_/g, " ")}])` : `${room}([${room}])`
-   } else if (options.translationType == 'landmark') {
-      name = `${room}([${room}])`
+      name = special[room] && specialCustom[room]?.[1] ? `${room}(["${special[room][0].replaceAll(/_/g, " ")}${number}"])` : `${room}(["${room}${number}"])`
+   } else if (options.translationType == 'none') {
+      name = `${room}(["${room}${number}"])`
    }
    //var name = room
    if (lastLocation == room) {
